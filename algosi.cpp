@@ -1,17 +1,19 @@
 ﻿ 
- 
- 
-#include <stdexcept>
-#include <iostream>
+#include<iostream>
 
-
-
-
+#include<string>
 using namespace std;
 
-
-
-
+int MinRunGet(int n)
+{
+    int r = 0;
+    while (n >= 64)
+    {
+        r |= (n & 1);
+        n >>= 1;
+    }
+    return n + r;
+}
 
 
 template <typename T>
@@ -46,7 +48,7 @@ public:
 
     DynamicArray(std::initializer_list<T> list) {
         size_t i = 0;
-        size = list.size(); 
+        size = list.size();
         capacity = size * 2;
         arr = new T[capacity];
         for (const T& elem : list) {
@@ -55,16 +57,16 @@ public:
     }
 
     T& operator[](int index) {
-     
+
         if (AllowedIndex(index))
             return arr[index];
 
         throw std::out_of_range("Error");
-         
+
     }
 
-     
-    
+
+
 
     DynamicArray& operator=(const DynamicArray& other) {
         if (this != &other) {
@@ -158,77 +160,80 @@ private:
         arr = newArr;
     }
 };
+
 class Exception : public std::invalid_argument {
     using std::invalid_argument::invalid_argument;
 };
 
 
- 
 
 
-
-const int MIN_MERGE = 32;
-
-void insertionSort(DynamicArray<int>& arr, int left, int right) {
-    for (int i = left + 1; i <= right; i++) {
-        int key = arr[i];
-        int j = i - 1;
-
-        while (j >= left && arr[j] > key) {
-            arr[j + 1] = arr[j];
-            j--;
+void Sort_ins(DynamicArray<int>& mass, int left, int right)
+{
+    for (int i = left + 1; i <= right; i++)
+    {
+        int max = mass[i];
+        int g = i - 1;
+        while (g >= left && max < mass[g])
+        {
+            mass[g + 1] = mass[g];
+            mass[g] = max;
+            g = g - 1;
         }
-        arr[j + 1] = key;
     }
 }
-void merge(DynamicArray<int>& arr, int l, int m, int r) {
-    int len1 = m - l + 1, len2 = r - m;
-    DynamicArray<int> left(len1), right(len2);
 
-    for (int i = 0; i < len1; i++) {
-        left[i] = arr[l + i];
-    }
-    for (int i = 0; i < len2; i++) {
-        right[i] = arr[m + 1 + i];
-    }
+
+
+void merge(DynamicArray<int>& mass, int l, int m, int r)
+{
+    int* Left = new int[m - l + 1];
+    int* Right = new int[r - m];
+    for (int i = 0; i < m - l + 1; i++)
+        Left[i] = mass[l + i];
+    for (int i = 0; i < r - m; i++)
+        Right[i] = mass[m + 1 + i];
     int i = 0, j = 0, k = l, testL = 0, testR = 0;
-    
-
-    while (i < len1 && j < len2) {
-        if (left[i] <= right[j]) {
-            arr[k] = left[i];
+    while (i < m - l + 1 && j < r - m)
+    {
+        if (Left[i] <= Right[j]) {
+            mass[k] = Left[i];
             i++;
+            testL++;
+            testR = 0;
         }
         else {
-            arr[k] = right[j];
+            mass[k] = Right[j];
             j++;
+            testR++;
+            testL = 0;
         }
         k++;
     }
-    
+
     if (testL >= 7)  //галоп начинается тут, после того как из массива Left были взяты 7 раз элементы
     {
         int gallopStep = 1;
-        bool col_mass = 1;
+        bool col_mass_bro = 1;
         for (int g = i; g < m - l + 1;)
         {
-            if (left[g] <= right[j])
+            if (Left[g] <= Right[j])
             {
                 g += gallopStep;
                 gallopStep *= 2;
             }
             else
             {
-                col_mass = 0;
+                col_mass_bro = 0;
                 testL = 0;
                 testR = 0;
             }
         }
-        if (col_mass)
+        if (col_mass_bro)
         {
             for (int g = 0; g < m - l + 1; g++)
             {
-                arr[k] = left[g];
+                mass[k] = Left[g];
                 k++;
                 i++;
                 testL = 0;
@@ -242,7 +247,7 @@ void merge(DynamicArray<int>& arr, int l, int m, int r) {
         bool col_mass_bro = 1;
         for (int g = i; g < r - m;)
         {
-            if (right[g] <= left[i])
+            if (Right[g] <= Left[i])
             {
                 g += gallopStep;
                 gallopStep *= 2;
@@ -258,7 +263,7 @@ void merge(DynamicArray<int>& arr, int l, int m, int r) {
         {
             for (int g = 0; g < r - m; g++)
             {
-                arr[k] = left[g];
+                mass[k] = Left[g];
                 k++;
                 j++;
                 testL = 0;
@@ -268,50 +273,126 @@ void merge(DynamicArray<int>& arr, int l, int m, int r) {
     }
 
 
-    while (i < len1) {
-        arr[k] = left[i];
+
+    while (i < m - l + 1)
+    {
+        mass[k] = Left[i];
         i++;
         k++;
     }
 
-    while (j < len2) {
-        arr[k] = right[j];
+    while (j < r - m)
+    {
+        mass[k] = Right[j];
         j++;
         k++;
     }
 }
-int get_minrun(int n) {
-    int r = 0;
-    while (n >= 64) {
-        r |= n & 1;
-        n >>= 1;
-    }
-    return n + r;
+
+int min(int x, int y)
+{
+    if (x > y)
+        return y;
+    else
+        return x;
 }
-void timsort(DynamicArray<int>& arr) {
-    int n = get_minrun(arr.getSize());
 
-    for (int i = 0; i < n; i += MIN_MERGE) {
-        insertionSort(arr, i, std::min((i + MIN_MERGE - 1), (n - 1)));
+void swap(int& a, int& b)
+{
+    a = a ^ b;
+    b = a ^ b;
+    a = a ^ b;
+}
+
+void Timsort(DynamicArray<int>& mass, int n)
+{
+    int MinRun = MinRunGet(n);
+    for (int i = 0; i < n; i += MinRun)
+    {
+        int min_num = min(i + MinRun - 1, n - 1);
+        int min_num2 = min_num;
+        for (int g = i; g < min_num2; g++)
+        {
+            if (mass[g] > mass[g + 1])
+            {
+                min_num--;
+            }
+
+        }
+        if (min_num != 0)
+            Sort_ins(mass, i, min_num2); // min тут для того, чтобы за границы массива не вылетить
+        else
+        {
+            min_num = min(i + MinRun, n);
+            for (int g = i; g < min_num / 2; g++)
+            {
+                swap(mass[g], mass[min_num2]);
+                min_num2--;
+            }
+        }
     }
-
-    for (int size = MIN_MERGE; size < n; size = 2 * size) {
-        for (int left = 0; left < n; left += 2 * size) {
+    for (int size = MinRun; size < n; size = 2 * size)
+    {
+        for (int left = 0; left < n - size; left += 2 * size)
+        {
             int mid = left + size - 1;
-            int right = std::min((left + 2 * size - 1), (n - 1));
-            merge(arr, left, mid, right);
+            int right = min((left + 2 * size - 1), (n - 1));
+            merge(mass, left, mid, right);
         }
     }
 }
 
-int main() {
-    DynamicArray<int> arr = { 1,2,3,4,5,3,4,9,7,6,5,4,3,2,1 };
+int interface_for_tim()
+{
+    cout << "Что делаем? (для выбора ввидите число)";
+    cout << "\n1.Создать автоматически массив из рамндомных значений заданного размера";
+    cout << "\n2.Ввести собственные значения (через пробел)";
+    cout << "\nНомер варианта: ";
+    int g;
+    cin >> g;
+    return g;
+}
 
-    timsort(arr);
-    for (int i = 0; i < arr.getSize(); i++) {
-        std::cout << arr[i] << " ";
-    }
+int main()
+{
+
+    setlocale(LC_CTYPE, "Russian");
+    DynamicArray<int> lol;
+    switch (interface_for_tim())
+    {
+    case 1:
+    {
+        cout << "Количество элементов массива: ";
+        int k;
+        cin >> k;
     
 
+        for (int i = 0; i < k; i++)
+        {
+            lol.append(rand() % 400 + 1); 
+        }
+        break;
+    }
+    case 2:
+    {
+        cout << "Введите выражение: ";
+        string expression;
+        cin >> expression;
+        getline(cin, expression);
+     
+        break;
+    }
+    default:
+        break;
+    }
+    cout << "Готовый массив: ";
+    Timsort(lol, lol.getSize());
+    for (int i = 0; i < lol.getSize(); i++) {
+        cout << lol[i] << " ";
+    }
     return 0;
 }
+
+
+
+
