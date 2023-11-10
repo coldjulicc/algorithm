@@ -1,227 +1,18 @@
-﻿#include <iostream>
-#include <stack>
-#include <string>
-#include <sstream>
-#include <regex>
-#include <vector>
-#include <queue>
-
-
-using namespace std; 
-
-
-template <typename T>
-class Stack
-{
-private:
-    class Node {
-    public:
-        T data;
-        Node* prev;
-        Node* next;
-
-        Node(int value) : data(value), prev(nullptr), next(nullptr) {}
-    };
-    Node* head;
-    int count;
-
-public:
-    Stack() : head(nullptr), count(0) {}
-
-    void Push(T value)
-    {
-        Node* newNode = new Node(value);
-
-        if (head == nullptr)
-        {
-            head = newNode;
-        }
-        else
-        {
-            newNode->next = head;
-            head->previous = newNode;
-            head = newNode;
-        }
-
-        count++;
-    }
-
-    T Pop()
-    {
-        if (IsEmpty())
-        {
-            throw std::runtime_error("Stack is empty");
-        }
-
-        T data = head->data;
-        Node* temp = head;
-
-        head = head->next;
-
-        if (head != nullptr)
-        {
-            head->previous = nullptr;
-        }
-
-        delete temp;
-        count--;
-
-        return data;
-    }
-
-    T Top()
-    {
-        if (IsEmpty())
-        {
-            throw std::runtime_error("Stack is empty");
-        }
-
-        return head->data;
-    }
-
-    bool IsEmpty()
-    {
-        return count == 0;
-    }
-
-    int Size()
-    {
-        return count;
-    }
-};
+﻿ 
+ 
+ 
+#include <stdexcept>
+#include <iostream>
 
 
 
-template <typename T>
-class DoublyLinkedList {
-private:
-    class Node {
-    public:
-        T data;
-        Node* prev;
-        Node* next;
 
-        Node(int value) : data(value), prev(nullptr), next(nullptr) {}
-    };
-    Node* head;
-    Node* tail;
-    int length;
+using namespace std;
 
-public:
-    DoublyLinkedList() : head(nullptr), tail(nullptr), length(0) {}
 
-    void insertAt(int index, int value) {
-        if (index < 0 || index > length) {
-            throw std::out_of_range("Index out of range");
-        }
 
-        Node* newNode = new Node(value);
 
-        if (index == 0) {
-            prepend(value);
-        }
-        else if (index == length) {
-            append(value);
-        }
-        else {
-            Node* current = head;
-            for (int i = 0; i < index - 1; i++) {
-                current = current->next;
-            }
 
-            newNode->next = current->next;
-            newNode->prev = current;
-            current->next->prev = newNode;
-            current->next = newNode;
-
-            length++;
-        }
-    }
-
-    void removeAt(int index) {
-        if (index < 0 || index >= length) {
-            throw std::out_of_range("Index out of range");
-        }
-
-        if (index == 0) {
-            Node* temp = head;
-            head = head->next;
-            if (head != nullptr) {
-                head->prev = nullptr;
-            }
-            delete temp;
-        }
-        else if (index == length - 1) {
-            Node* temp = tail;
-            tail = tail->prev;
-            if (tail != nullptr) {
-                tail->next = nullptr;
-            }
-            delete temp;
-        }
-        else {
-            Node* current = head;
-            for (int i = 0; i < index; i++) {
-                current = current->next;
-            }
-
-            current->prev->next = current->next;
-            current->next->prev = current->prev;
-            delete current;
-        }
-
-        length--;
-    }
-
-    void append(T value) {
-        Node* newNode = new Node(value);
-
-        if (head == nullptr) {
-            head = newNode;
-            tail = newNode;
-        }
-        else {
-            newNode->prev = tail;
-            tail->next = newNode;
-            tail = newNode;
-        }
-
-        length++;
-    }
-
-    void prepend(T value) {
-        Node* newNode = new Node(value);
-
-        if (head == nullptr) {
-            head = newNode;
-            tail = newNode;
-        }
-        else {
-            newNode->next = head;
-            head->prev = newNode;
-            head = newNode;
-        }
-
-        length++;
-    }
-
-    int get(int index) {
-        if (index < 0 || index >= length) {
-            throw std::out_of_range("Index out of range");
-        }
-
-        Node* current = head;
-        for (int i = 0; i < index; i++) {
-            current = current->next;
-        }
-
-        return current->data;
-    }
-
-    int getLength() {
-        return length;
-    }
-};
 
 template <typename T>
 class DynamicArray {
@@ -246,6 +37,42 @@ public:
         size = 0;
         arr = new T[capacity];
     }
+
+    DynamicArray(int size) {
+        capacity = size * 2;
+        size = size;
+        arr = new T[capacity];
+    }
+
+    DynamicArray(std::initializer_list<T> list) {
+        size_t i = 0;
+        size = list.size(); 
+        capacity = size * 2;
+        arr = new T[capacity];
+        for (const T& elem : list) {
+            arr[i++] = elem;
+        }
+    }
+
+    T& operator[](int index) {
+     
+        if (AllowedIndex(index))
+            return arr[index];
+
+        throw std::out_of_range("Error");
+         
+    }
+
+     
+    
+
+    DynamicArray& operator=(const DynamicArray& other) {
+        if (this != &other) {
+            data = other.data;
+        }
+        return *this;
+    }
+
 
     ~DynamicArray() {
         delete[] arr;
@@ -331,122 +158,160 @@ private:
         arr = newArr;
     }
 };
+class Exception : public std::invalid_argument {
+    using std::invalid_argument::invalid_argument;
+};
 
-
-int getPrecedence(char op) {
-    if (op == '+' || op == '-')
-        return 1;
-    else if (op == '*' || op == '/')
-        return 2;
-    else if (op == '^')
-        return 3;
-    else if (op == 's' || op == 'c' || op == 't')
-        return 4;
-    else
-        return 0;
-}
-
-double applyOperator(double a, double b, char op) {
-    switch (op) {
-    case '+':
-        return a + b;
-    case '-':
-        return a - b;
-    case '*':
-        return a * b;
-    case '/':
-        return a / b;
-    case '^':
-        return pow(a, b);
-    case 's':
-        return sin(b);
-    case 'c':
-        return cos(b);
-    case 't':
-        return tan(b);
-    }
-    return 0;
-}
-
-double evaluateExpression(string expression) {
-    stack<char> operators;
-    queue<double> operands;
-
-    for (int i = 0; i < expression.length(); i++) {
-        if (expression[i] == ' ')
-            continue;
-
-        if (isdigit(expression[i])) {
-            double operand = 0;
-            while (i < expression.length() && (isdigit(expression[i]) || expression[i] == '.')) {
-                operand = operand * 10 + (expression[i] - '0');
-                i++;
-            }
-            i--;
-            operands.push(operand);
-        }
-        else if (expression[i] == '(') {
-            operators.push('(');
-        }
-        else if (expression[i] == ')') {
-            while (!operators.empty() && operators.top() != '(') {
-                double b = operands.front();
-                operands.pop();
-
-                double a = operands.front();
-                operands.pop();
-
-                char op = operators.top();
-                operators.pop();
-
-                double result = applyOperator(a, b, op);
-                operands.push(result);
-            }
-            operators.pop(); // Remove '('
-        }
-        else {
-            while (!operators.empty() && getPrecedence(operators.top()) >= getPrecedence(expression[i])) {
-                double b = operands.front();
-                operands.pop();
-
-                double a = operands.front();
-                operands.pop();
-
-                char op = operators.top();
-                operators.pop();
-
-                double result = applyOperator(a, b, op);
-                operands.push(result);
-            }
-            operators.push(expression[i]);
-        }
-    }
-
-    while (!operators.empty()) {
-        double b = operands.front();
-        operands.pop();
-
-        double a = operands.front();
-        operands.pop();
-
-        char op = operators.top();
-        operators.pop();
-
-        double result = applyOperator(a, b, op);
-        operands.push(result);
-    }
-
-    return operands.front();
-}
 
  
-int main() {
-    string expression;
-    cout << "Enter an expression: ";
-    getline(cin, expression);
 
-    double result = evaluateExpression(expression);
-    cout << "Result: " << result << endl;
+
+
+const int MIN_MERGE = 32;
+
+void insertionSort(DynamicArray<int>& arr, int left, int right) {
+    for (int i = left + 1; i <= right; i++) {
+        int key = arr[i];
+        int j = i - 1;
+
+        while (j >= left && arr[j] > key) {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+        arr[j + 1] = key;
+    }
+}
+void merge(DynamicArray<int>& arr, int l, int m, int r) {
+    int len1 = m - l + 1, len2 = r - m;
+    DynamicArray<int> left(len1), right(len2);
+
+    for (int i = 0; i < len1; i++) {
+        left[i] = arr[l + i];
+    }
+    for (int i = 0; i < len2; i++) {
+        right[i] = arr[m + 1 + i];
+    }
+    int i = 0, j = 0, k = l, testL = 0, testR = 0;
+    
+
+    while (i < len1 && j < len2) {
+        if (left[i] <= right[j]) {
+            arr[k] = left[i];
+            i++;
+        }
+        else {
+            arr[k] = right[j];
+            j++;
+        }
+        k++;
+    }
+    
+    if (testL >= 7)  //галоп начинается тут, после того как из массива Left были взяты 7 раз элементы
+    {
+        int gallopStep = 1;
+        bool col_mass = 1;
+        for (int g = i; g < m - l + 1;)
+        {
+            if (left[g] <= right[j])
+            {
+                g += gallopStep;
+                gallopStep *= 2;
+            }
+            else
+            {
+                col_mass = 0;
+                testL = 0;
+                testR = 0;
+            }
+        }
+        if (col_mass)
+        {
+            for (int g = 0; g < m - l + 1; g++)
+            {
+                arr[k] = left[g];
+                k++;
+                i++;
+                testL = 0;
+                testR = 0;
+            }
+        }
+    }
+    else if (testR >= 7) //галоп начинается тут, после того как из массива Right были взяты 7 раз элементы
+    {
+        int gallopStep = 1;
+        bool col_mass_bro = 1;
+        for (int g = i; g < r - m;)
+        {
+            if (right[g] <= left[i])
+            {
+                g += gallopStep;
+                gallopStep *= 2;
+            }
+            else
+            {
+                col_mass_bro = 0;
+                testL = 0;
+                testR = 0;
+            }
+        }
+        if (col_mass_bro)
+        {
+            for (int g = 0; g < r - m; g++)
+            {
+                arr[k] = left[g];
+                k++;
+                j++;
+                testL = 0;
+                testR = 0;
+            }
+        }
+    }
+
+
+    while (i < len1) {
+        arr[k] = left[i];
+        i++;
+        k++;
+    }
+
+    while (j < len2) {
+        arr[k] = right[j];
+        j++;
+        k++;
+    }
+}
+int get_minrun(int n) {
+    int r = 0;
+    while (n >= 64) {
+        r |= n & 1;
+        n >>= 1;
+    }
+    return n + r;
+}
+void timsort(DynamicArray<int>& arr) {
+    int n = get_minrun(arr.getSize());
+
+    for (int i = 0; i < n; i += MIN_MERGE) {
+        insertionSort(arr, i, std::min((i + MIN_MERGE - 1), (n - 1)));
+    }
+
+    for (int size = MIN_MERGE; size < n; size = 2 * size) {
+        for (int left = 0; left < n; left += 2 * size) {
+            int mid = left + size - 1;
+            int right = std::min((left + 2 * size - 1), (n - 1));
+            merge(arr, left, mid, right);
+        }
+    }
+}
+
+int main() {
+    DynamicArray<int> arr = { 1,2,3,4,5,3,4,9,7,6,5,4,3,2,1 };
+
+    timsort(arr);
+    for (int i = 0; i < arr.getSize(); i++) {
+        std::cout << arr[i] << " ";
+    }
+    
 
     return 0;
 }
